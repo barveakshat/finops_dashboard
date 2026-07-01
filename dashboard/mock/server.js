@@ -1,6 +1,6 @@
 // dashboard/mock/server.js
 // Run with: node mock/server.js
-const http = require("http");
+import http from "http";
 
 const mockData = {
   costs: {
