@@ -3,23 +3,26 @@ import CostTrendChart from "./components/CostTrendChart";
 import ServiceBreakdown from "./components/ServiceBreakdown";
 import AnomalyList from "./components/AnomalyList";
 import BudgetGauge from "./components/BudgetGauge";
-import "./App.css";
+import "./index.css";
 
 function App() {
   const [selectedService, setSelectedService] = useState(null);
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h1>FinOps Dashboard</h1>
-      <BudgetGauge month="2024-01" />
-      <div style={{ marginTop: "2rem" }}>
-        <CostTrendChart selectedService={selectedService} />
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <div className="eyebrow">AWS Cost Monitoring</div>
+        <h1 className="dashboard-title">FinOps Dashboard</h1>
+        <p className="dashboard-sub">Daily cost tracking, anomaly detection, and budget status.</p>
       </div>
-      <div style={{ marginTop: "2rem" }}>
+
+      <div className="stack">
+        <BudgetGauge month="2024-01" />
+        <div className="grid-2">
+          <CostTrendChart selectedService={selectedService} />
+          <AnomalyList period="7d" onSelectService={setSelectedService} />
+        </div>
         <ServiceBreakdown period="7d" />
-      </div>
-      <div style={{ marginTop: "2rem" }}>
-        <AnomalyList period="7d" onSelectService={setSelectedService} />
       </div>
     </div>
   );

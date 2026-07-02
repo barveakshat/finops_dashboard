@@ -1,11 +1,10 @@
-// dashboard/src/components/BudgetGauge.jsx
 import { useState, useEffect } from "react";
 import { getBudget } from "../api/client";
 
-function getColor(pct) {
-  if (pct < 80) return "#38a169";   // green
-  if (pct <= 100) return "#d69e2e"; // orange
-  return "#e53e3e";                 // red
+function getStatus(pct) {
+  if (pct < 80) return { color: "var(--accent-green)", label: "On track" };
+  if (pct <= 100) return { color: "var(--accent-amber)", label: "Watch" };
+  return { color: "var(--accent-red)", label: "Over budget" };
 }
 
 export default function BudgetGauge({ month = "2024-01" }) {
@@ -16,41 +15,39 @@ export default function BudgetGauge({ month = "2024-01" }) {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    getBudget(month)
-      .then(setBudget)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
+    getBudget(month).then(setBudget).catch(err => setError(err.message)).finally(() => setLoading(false));
   }, [month]);
 
-  if (loading) return <div style={{ padding: "1rem" }}>Loading budget…</div>;
-  if (error) return <div style={{ padding: "1rem", color: "red" }}>Error: {error}</div>;
+  if (loading) return <div className="card">Loading budget…</div>;
+  if (error) return <div className="card" style={{ color: "var(--accent-red)" }}>Error: {error}</div>;
   if (!budget) return null;
 
   const pct = Math.min(budget.pct_used, 100);
-  const color = getColor(budget.pct_used);
+  const status = getStatus(budget.pct_used);
 
   return (
-    <div style={{ width: "100%", background: "#fff", padding: "1rem", borderRadius: "8px" }}>
-      <h2 style={{ marginTop: 0 }}>Budget — {budget.month}</h2>
-
-      <div style={{ background: "#edf2f7", borderRadius: "8px", overflow: "hidden", height: "24px" }}>
-        <div
-          style={{
-            width: `${pct}%`,
-            background: color,
-            height: "100%",
-            transition: "width 0.3s ease"
-          }}
-        />
+    <div className="card">
+      <div className="card-title-row">
+        <span className="card-title">Budget — {budget.month}</span>
+        <span className="mono" style={{ fontSize: "0.75rem", color: status.color, fontWeight: 600 }}>● {status.label}</span>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.75rem", fontSize: "0.9rem" }}>
-        <span>${budget.spent_usd.toFixed(2)} spent of ${budget.budget_usd.toFixed(2)}</span>
-        <span style={{ color, fontWeight: 600 }}>{budget.pct_used}% used</span>
+      <div style={{ position: "relative", height: "10px", background: "var(--surface-raised)", borderRadius: "5px", overflow: "hidden", border: "1px solid var(--border)" }}>
+        <div style={{ width: `${pct}%`, height: "100%", background: status.color, transition: "width 0.4s ease", borderRadius: "5px" }} />
+        {[25, 50, 75].map(t => (
+          <div key={t} style={{ position: "absolute", left: `${t}%`, top: 0, bottom: 0, width: "1px", background: "rgba(0,0,0,0.25)" }} />
+        ))}
       </div>
 
-      <div style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "#718096" }}>
-        {budget.days_remaining} days remaining · Projected total: ${budget.projected_total.toFixed(2)}
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
+        <span className="mono" style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>${budget.spent_usd.toFixed(2)}</span> / ${budget.budget_usd.toFixed(2)}
+        </span>
+        <span className="mono" style={{ fontSize: "0.85rem", fontWeight: 600, color: status.color }}>{budget.pct_used}%</span>
+      </div>
+
+      <div className="mono" style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-faint)" }}>
+        {budget.days_remaining}d remaining · projected ${budget.projected_total.toFixed(2)}
       </div>
     </div>
   );
