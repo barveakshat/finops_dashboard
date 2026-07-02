@@ -17,11 +17,16 @@ function AnomalyDot(props) {
   return <circle cx={cx} cy={cy} r={3} fill="#3182ce" />;
 }
 
-export default function CostTrendChart() {
+export default function CostTrendChart({ selectedService }) {
   const [service, setService] = useState(SERVICES[0]);
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // If AnomalyList tells us to switch service (row click), sync it here
+  useEffect(() => {
+    if (selectedService) setService(selectedService);
+  }, [selectedService]);
 
   useEffect(() => {
     setLoading(true);
