@@ -3,6 +3,7 @@ import CostTrendChart from "./components/CostTrendChart";
 import ServiceBreakdown from "./components/ServiceBreakdown";
 import AnomalyList from "./components/AnomalyList";
 import BudgetGauge from "./components/BudgetGauge";
+import StatsRow from "./components/StatsRow";
 import "./index.css";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
       </div>
 
       <div className="stack">
+        <StatsRow />
         <BudgetGauge month="2024-01" />
         <div className="grid-2">
           <CostTrendChart selectedService={selectedService} />

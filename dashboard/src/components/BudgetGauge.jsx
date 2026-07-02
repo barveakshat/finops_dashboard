@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
 import { getBudget } from "../api/client";
 
 function getStatus(pct) {
@@ -32,22 +33,31 @@ export default function BudgetGauge({ month = "2024-01" }) {
         <span className="mono" style={{ fontSize: "0.75rem", color: status.color, fontWeight: 600 }}>● {status.label}</span>
       </div>
 
-      <div style={{ position: "relative", height: "10px", background: "var(--surface-raised)", borderRadius: "5px", overflow: "hidden", border: "1px solid var(--border)" }}>
-        <div style={{ width: `${pct}%`, height: "100%", background: status.color, transition: "width 0.4s ease", borderRadius: "5px" }} />
-        {[25, 50, 75].map(t => (
-          <div key={t} style={{ position: "absolute", left: `${t}%`, top: 0, bottom: 0, width: "1px", background: "rgba(0,0,0,0.25)" }} />
-        ))}
-      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "2rem", flexWrap: "wrap" }}>
+        <div style={{ position: "relative", width: 140, height: 140 }}>
+          <RadialBarChart width={140} height={140} cx={70} cy={70} innerRadius={50} outerRadius={65}
+            data={[{ value: pct, fill: status.color }]} startAngle={90} endAngle={-270}>
+            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+            <RadialBar background={{ fill: "var(--surface-raised)" }} dataKey="value" cornerRadius={10} />
+          </RadialBarChart>
+          <div style={{
+            position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center"
+          }}>
+            <span className="mono" style={{ fontSize: "1.4rem", fontWeight: 700, color: status.color }}>{budget.pct_used}%</span>
+            <span style={{ fontSize: "0.65rem", color: "var(--text-faint)" }}>used</span>
+          </div>
+        </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
-        <span className="mono" style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>${budget.spent_usd.toFixed(2)}</span> / ${budget.budget_usd.toFixed(2)}
-        </span>
-        <span className="mono" style={{ fontSize: "0.85rem", fontWeight: 600, color: status.color }}>{budget.pct_used}%</span>
-      </div>
-
-      <div className="mono" style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-faint)" }}>
-        {budget.days_remaining}d remaining · projected ${budget.projected_total.toFixed(2)}
+        <div style={{ flex: 1, minWidth: "180px" }}>
+          <div className="mono" style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>${budget.spent_usd.toFixed(2)}</span>
+            <span style={{ color: "var(--text-muted)" }}> / ${budget.budget_usd.toFixed(2)}</span>
+          </div>
+          <div className="mono" style={{ fontSize: "0.8rem", color: "var(--text-faint)" }}>
+            {budget.days_remaining}d remaining · projected ${budget.projected_total.toFixed(2)}
+          </div>
+        </div>
       </div>
     </div>
   );

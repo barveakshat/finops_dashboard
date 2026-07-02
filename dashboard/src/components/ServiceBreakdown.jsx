@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { getCosts } from "../api/client";
 
-const COLORS = ["#5B8DEF", "#EF4444", "#34D399", "#F5A623", "#A78BFA", "#22D3EE"];
+const COLORS = ["#4C9FFF", "#FF8A3D", "#2DD4BF", "#A66BFF", "#FF6B9D", "#34D399"];
 
 export default function ServiceBreakdown({ period = "7d" }) {
   const [data, setData] = useState([]);
