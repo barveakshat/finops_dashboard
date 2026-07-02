@@ -149,17 +149,28 @@ def test_build_slack_blocks_structure():
     assert "blocks" in payload
     blocks = payload["blocks"]
 
-    # Header block
+    # Header block — matches template format
     assert blocks[0]["type"] == "header"
-    assert "AmazonEC2" in blocks[0]["text"]["text"]
+    assert blocks[0]["text"]["text"] == "Cost Anomaly Detected: AmazonEC2"
 
-    # Section with fields
+    # Section with 4 fields: Date, Service, Cost Today, Expected Range
     assert blocks[1]["type"] == "section"
     assert len(blocks[1]["fields"]) == 4
+    field_labels = [f["text"].split("\n")[0] for f in blocks[1]["fields"]]
+    assert "*Date:*" in field_labels
+    assert "*Service:*" in field_labels
+    assert "*Cost Today:*" in field_labels
+    assert "*Expected Range:*" in field_labels
 
-    # Actions block with button
+    # Reason block with :warning: prefix
+    assert blocks[2]["type"] == "section"
+    assert blocks[2]["text"]["text"].startswith(":warning: *Reason:*")
+
+    # Actions block with primary-styled button
     assert blocks[3]["type"] == "actions"
     assert blocks[3]["elements"][0]["type"] == "button"
+    assert blocks[3]["elements"][0]["style"] == "primary"
+    assert blocks[3]["elements"][0]["text"]["text"] == "View Dashboard"
 
 
 def test_build_slack_blocks_no_baseline():
