@@ -13,12 +13,15 @@ export default function StatsRow() {
     getAnomalies("7d").then(setAnomalies).catch(() => {});
   }, []);
 
+  const remaining = budget ? budget.budget_usd - budget.spent_usd : null;
+
   return (
     <div className="stats-row">
       <StatCard label="Total Spend (7d)" value={costs ? `$${costs.total_cost_usd.toFixed(2)}` : "—"} sublabel={costs?.period} accent="var(--accent-blue)" />
       <StatCard label="Budget Used" value={budget ? `${budget.pct_used}%` : "—"} sublabel={budget ? `$${budget.spent_usd.toFixed(0)} of $${budget.budget_usd.toFixed(0)}` : ""} accent="var(--accent-teal)" />
       <StatCard label="Active Anomalies" value={anomalies ? anomalies.anomalies.length : "—"} sublabel="last 7 days" accent="var(--accent-orange)" />
-      <StatCard label="Days Remaining" value={budget ? budget.days_remaining : "—"} sublabel={budget ? `proj. $${budget.projected_total.toFixed(0)}` : ""} accent="var(--accent-purple)" />
+      <StatCard label="Forecast" value={budget ? `$${budget.projected_total.toFixed(0)}` : "—"} sublabel="month-end estimate" accent="var(--accent-purple)" />
+      <StatCard label="Remaining Budget" value={remaining != null ? `$${remaining.toFixed(0)}` : "—"} sublabel={budget ? `${budget.days_remaining}d left` : ""} accent="var(--accent-pink)" />
     </div>
   );
 }

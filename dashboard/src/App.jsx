@@ -24,7 +24,7 @@ function App() {
           <CostTrendChart selectedService={selectedService} />
           <AnomalyList period="7d" onSelectService={setSelectedService} />
         </div>
-        <ServiceBreakdown period="7d" />
+        <ServiceBreakdown period="7d" selectedService={selectedService} onSelectService={setSelectedService} />
       </div>
     </div>
   );

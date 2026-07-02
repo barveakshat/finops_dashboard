@@ -6,20 +6,16 @@ const SERVICES = ["AmazonEC2", "AmazonRDS", "AmazonS3", "AWSLambda"];
 
 function AnomalyDot(props) {
   const { cx, cy, payload } = props;
-  if (payload.is_anomaly) return <circle cx={cx} cy={cy} r={5} fill="#EF4444" stroke="#0F1219" strokeWidth={2} />;
-  return <circle cx={cx} cy={cy} r={2.5} fill="#5B8DEF" />;
-}
-
-function CustomTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
-  const p = payload[0].payload;
-  return (
-    <div style={{ background: "#1D222D", border: "1px solid #333A4A", borderRadius: "6px", padding: "0.6rem 0.8rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>
-      <div style={{ color: "#8A93A6", marginBottom: "0.25rem" }}>{label}</div>
-      <div style={{ color: "#E7E9EE" }}>${p.total_usd?.toFixed(2)}</div>
-      {p.is_anomaly && <div style={{ color: "#EF4444", marginTop: "0.25rem" }}>⚠ anomaly</div>}
-    </div>
-  );
+  if (payload.is_anomaly) {
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={12} fill="#FF5C5C" opacity={0.15} />
+        <circle cx={cx} cy={cy} r={7} fill="#FF5C5C" opacity={0.35} />
+        <circle cx={cx} cy={cy} r={4.5} fill="#FF5C5C" stroke="#0A1420" strokeWidth={1.5} />
+      </g>
+    );
+  }
+  return <circle cx={cx} cy={cy} r={2.5} fill="#4C9FFF" />;
 }
 
 export default function CostTrendChart({ selectedService }) {
@@ -36,6 +32,37 @@ export default function CostTrendChart({ selectedService }) {
     getServiceTrend(service, "30d").then(data => setTrend(data.trend || [])).catch(err => setError(err.message)).finally(() => setLoading(false));
   }, [service]);
 
+  function CustomTooltip({ active, payload, label }) {
+    if (!active || !payload?.length) return null;
+    const p = payload[0].payload;
+    const actual = p.total_usd;
+    const expected = p.baseline_30d_avg;
+    const diff = expected != null ? actual - expected : null;
+    const pct = expected ? (diff / expected) * 100 : null;
+    const reason = p.is_anomaly ? `Z-score ${p.z_score} exceeds threshold 2.5` : "Normal variation";
+
+    return (
+      <div className="chart-tooltip">
+        <div className="tooltip-date mono">{label}</div>
+        <div className="tooltip-row"><span>Service</span><span>{service}</span></div>
+        <div className="tooltip-row"><span>Actual</span><span className="mono">${actual?.toFixed(2)}</span></div>
+        <div className="tooltip-row"><span>Expected</span><span className="mono">${expected?.toFixed(2)}</span></div>
+        {diff != null && (
+          <div className="tooltip-row"><span>Difference</span>
+            <span className="mono" style={{ color: diff >= 0 ? "var(--accent-red)" : "var(--accent-green)" }}>{diff >= 0 ? "+" : ""}${diff.toFixed(2)}</span>
+          </div>
+        )}
+        {pct != null && (
+          <div className="tooltip-row"><span>Change</span>
+            <span className="mono" style={{ color: pct >= 0 ? "var(--accent-red)" : "var(--accent-green)" }}>{pct >= 0 ? "+" : ""}{pct.toFixed(1)}%</span>
+          </div>
+        )}
+        <div className="tooltip-row"><span>Z-score</span><span className="mono">{p.z_score ?? "—"}</span></div>
+        {p.is_anomaly && <div className="tooltip-reason">⚠ {reason}</div>}
+      </div>
+    );
+  }
+
   return (
     <div className="card">
       <div className="card-title-row">
@@ -49,13 +76,13 @@ export default function CostTrendChart({ selectedService }) {
       {error && <p style={{ color: "var(--accent-red)" }}>Error: {error}</p>}
 
       {!loading && !error && (
-        <ResponsiveContainer width="100%" height={280}>
+        <ResponsiveContainer width="100%" height={300}>
           <LineChart data={trend} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid stroke="#262C3A" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#565E70", fontFamily: "IBM Plex Mono" }} axisLine={{ stroke: "#262C3A" }} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: "#565E70", fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} />
-            <Tooltip content={<CustomTooltip />} />
-            <Line type="monotone" dataKey="total_usd" stroke="#5B8DEF" strokeWidth={2} dot={<AnomalyDot />} activeDot={{ r: 6 }} />
+            <CartesianGrid stroke="#1C2A42" vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#5A6B87", fontFamily: "IBM Plex Mono" }} axisLine={{ stroke: "#223049" }} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "#5A6B87", fontFamily: "IBM Plex Mono" }} axisLine={false} tickLine={false} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#4C9FFF", strokeWidth: 1, strokeDasharray: "4 4" }} />
+            <Line type="monotone" dataKey="total_usd" stroke="#4C9FFF" strokeWidth={2.5} dot={<AnomalyDot />} activeDot={{ r: 6, fill: "#4C9FFF", stroke: "#0A1420", strokeWidth: 2 }} />
           </LineChart>
         </ResponsiveContainer>
       )}

@@ -4,7 +4,7 @@ import { getCosts } from "../api/client";
 
 const COLORS = ["#4C9FFF", "#FF8A3D", "#2DD4BF", "#A66BFF", "#FF6B9D", "#34D399"];
 
-export default function ServiceBreakdown({ period = "7d" }) {
+export default function ServiceBreakdown({ period = "7d", selectedService, onSelectService }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,21 +35,30 @@ export default function ServiceBreakdown({ period = "7d" }) {
         <div style={{ display: "flex", alignItems: "center", gap: "2rem", flexWrap: "wrap" }}>
           <ResponsiveContainer width={220} height={220}>
             <PieChart>
-              <Pie data={data} dataKey="total" nameKey="service" innerRadius={60} outerRadius={95} paddingAngle={2}>
-                {data.map((entry, i) => <Cell key={entry.service} fill={COLORS[i % COLORS.length]} stroke="var(--surface)" strokeWidth={2} />)}
+              <Pie data={data} dataKey="total" nameKey="service" innerRadius={60} outerRadius={95} paddingAngle={2}
+                onClick={(entry) => onSelectService && onSelectService(entry.service)}
+                style={{ cursor: onSelectService ? "pointer" : "default" }}>
+                {data.map((entry, i) => (
+                  <Cell key={entry.service} fill={COLORS[i % COLORS.length]} stroke="var(--surface)"
+                    strokeWidth={entry.service === selectedService ? 3 : 2}
+                    opacity={selectedService && entry.service !== selectedService ? 0.4 : 1} />
+                ))}
               </Pie>
-              <Tooltip formatter={(v) => `$${v}`} contentStyle={{ background: "#1D222D", border: "1px solid #333A4A", borderRadius: "6px", fontFamily: "IBM Plex Mono" }} />
+              <Tooltip formatter={(v) => `$${v}`} contentStyle={{ background: "#16233A", border: "1px solid #2E3F5C", borderRadius: "10px", fontFamily: "IBM Plex Mono" }} />
             </PieChart>
           </ResponsiveContainer>
 
-          <div style={{ flex: 1, minWidth: "160px" }}>
+          <div style={{ flex: 1, minWidth: "200px" }}>
             {data.map((d, i) => (
-              <div key={d.service} style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid var(--border)" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem" }}>
-                  <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: COLORS[i % COLORS.length] }} />
+              <div key={d.service} className={`service-row ${selectedService === d.service ? "selected" : ""}`} onClick={() => onSelectService && onSelectService(d.service)}>
+                <span style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.85rem" }}>
+                  <span style={{ width: "9px", height: "9px", borderRadius: "3px", background: COLORS[i % COLORS.length] }} />
                   {d.service}
                 </span>
-                <span className="mono" style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{((d.total / totalAll) * 100).toFixed(0)}%</span>
+                <span style={{ display: "flex", gap: "0.75rem", alignItems: "baseline" }}>
+                  <span className="mono" style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>${d.total.toFixed(2)}</span>
+                  <span className="mono" style={{ fontSize: "0.85rem", fontWeight: 600 }}>{((d.total / totalAll) * 100).toFixed(0)}%</span>
+                </span>
               </div>
             ))}
           </div>

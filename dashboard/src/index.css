@@ -112,3 +112,52 @@ select {
 }
 .stat-value { font-size: 1.6rem; font-weight: 600; line-height: 1; }
 .stat-sublabel { font-size: 0.72rem; color: var(--text-faint); margin-top: 0.4rem; }
+
+.card {
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+  transition: border-color 0.2s ease;
+}
+.card:hover { border-color: var(--border-strong); }
+
+.stat-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
+
+.stats-row { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 1000px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.25rem 0.65rem; border-radius: 999px;
+  font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em;
+}
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge-green { background: rgba(52,211,153,0.12); color: var(--accent-green); }
+.badge-amber { background: rgba(245,166,35,0.12); color: var(--accent-amber); }
+.badge-red { background: rgba(255,92,92,0.14); color: var(--accent-red); }
+
+.chart-tooltip {
+  background: var(--surface-raised); border: 1px solid var(--border-strong);
+  border-radius: 10px; padding: 0.75rem 0.9rem; min-width: 210px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.tooltip-date { color: var(--text-muted); font-size: 0.7rem; margin-bottom: 0.5rem; }
+.tooltip-row { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.78rem; padding: 0.15rem 0; }
+.tooltip-row span:first-child { color: var(--text-faint); }
+.tooltip-reason { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--accent-red); }
+
+.anomaly-card {
+  padding: 0.9rem 1rem; background: var(--surface-raised);
+  border-left: 3px solid var(--accent-red); border-radius: 0 10px 10px 0;
+  cursor: pointer; transition: background 0.15s ease, transform 0.15s ease;
+}
+.anomaly-card:hover { background: #1B2A44; transform: translateX(2px); }
+
+.service-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.55rem 0.6rem; border-radius: 8px; cursor: pointer;
+  border: 1px solid transparent; transition: background 0.15s ease;
+}
+.service-row:hover { background: var(--surface-raised); }
+.service-row.selected { background: var(--surface-raised); border-color: var(--border-strong); }
