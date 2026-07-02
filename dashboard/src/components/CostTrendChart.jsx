@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { getServiceTrend } from "../api/client";
-
-const SERVICES = ["AmazonEC2", "AmazonRDS", "AmazonS3", "AWSLambda"];
+import { getServiceTrend, getCosts } from "../api/client";
 
 function AnomalyDot(props) {
   const { cx, cy, payload } = props;
@@ -19,14 +17,25 @@ function AnomalyDot(props) {
 }
 
 export default function CostTrendChart({ selectedService, refreshKey }) {
-  const [service, setService] = useState(SERVICES[0]);
+  const [services, setServices] = useState([]);
+  const [service, setService] = useState(null);
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Derive the service list from whatever the backend actually returns — no hardcoding
+  useEffect(() => {
+    getCosts("7d").then(data => {
+      const unique = [...new Set((data.records || []).map(r => r.service))].sort();
+      setServices(unique);
+      if (!service && unique.length > 0) setService(unique[0]);
+    }).catch(() => {});
+  }, [refreshKey]);
+
   useEffect(() => { if (selectedService) setService(selectedService); }, [selectedService]);
 
   useEffect(() => {
+    if (!service) return;
     setLoading(true);
     setError(null);
     getServiceTrend(service, "30d").then(data => setTrend(data.trend || [])).catch(err => setError(err.message)).finally(() => setLoading(false));
@@ -58,8 +67,8 @@ export default function CostTrendChart({ selectedService, refreshKey }) {
     <div className="card" style={{ padding: "1.5rem" }}>
       <div className="card-title-row">
         <span className="card-title">Cost Trend</span>
-        <select value={service} onChange={e => setService(e.target.value)}>
-          {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
+        <select value={service || ""} onChange={e => setService(e.target.value)}>
+          {services.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 

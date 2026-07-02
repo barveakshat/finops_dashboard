@@ -60,7 +60,13 @@ export default function BudgetGauge({ month = "2024-01", refreshKey }) {
       </div>
 
       <div className="mono" style={{ marginTop: "1.25rem", fontSize: "0.75rem", color: "var(--text-faint)" }}>
-        📅 Billing Cycle: Jan 1 – Jan 31 · {budget.days_remaining} days remaining
+        📅 Billing Cycle: {(() => {
+  const [y, m] = budget.month.split("-").map(Number);
+  const start = new Date(y, m - 1, 1);
+  const end = new Date(y, m, 0);
+  const fmt = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return `${fmt(start)} – ${fmt(end)}`;
+})()} · {budget.days_remaining} days remaining
       </div>
     </div>
   );
