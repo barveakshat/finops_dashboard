@@ -15,5 +15,9 @@ htmlcov/
 dist/
 *.zip
 lambda_packages/
+.build/
 .env
 .env.local
+finops-dashboard-guide-with-diagrams.md
+finops-implementation-plan-team.md
+imp-texts.txt

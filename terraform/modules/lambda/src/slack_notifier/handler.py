@@ -34,14 +34,15 @@ def parse_sns_message(event: dict) -> dict:
 
 
 def build_slack_blocks(data: dict) -> dict:
-    """Build a Slack Block Kit message from anomaly data."""
+    """Build a Slack Block Kit message from anomaly data.
+
+    Structure mirrors slack_blockkit_alert_template.json.
+    """
     service = data.get("service", "Unknown")
     date = data.get("date", "Unknown")
     cost_today = data.get("cost_today", 0)
     baseline_avg = data.get("baseline_avg")
     baseline_std = data.get("baseline_std")
-    z_score = data.get("z_score")
-    pct_change = data.get("pct_change_7d")
     reason = data.get("anomaly_reason", "Unknown reason")
     dashboard_link = data.get("dashboard_link", f"{DASHBOARD_URL}/service/{service}?date={date}")
 
@@ -49,7 +50,7 @@ def build_slack_blocks(data: dict) -> dict:
     if baseline_avg is not None and baseline_std is not None:
         low = round(baseline_avg - baseline_std, 2)
         high = round(baseline_avg + baseline_std, 2)
-        expected_range = f"${low:,.2f} – ${high:,.2f}"
+        expected_range = f"${low:,.0f}\u2013${high:,.0f}"
     elif baseline_avg is not None:
         expected_range = f"~${baseline_avg:,.2f}"
     else:
@@ -61,7 +62,7 @@ def build_slack_blocks(data: dict) -> dict:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"🚨 FinOps Alert — {service}",
+                    "text": f"Cost Anomaly Detected: {service}",
                     "emoji": True
                 }
             },
@@ -69,16 +70,16 @@ def build_slack_blocks(data: dict) -> dict:
                 "type": "section",
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Date:*\n{date}"},
+                    {"type": "mrkdwn", "text": f"*Service:*\n{service}"},
                     {"type": "mrkdwn", "text": f"*Cost Today:*\n${cost_today:,.2f}"},
-                    {"type": "mrkdwn", "text": f"*Expected Range:*\n{expected_range}"},
-                    {"type": "mrkdwn", "text": f"*% Change (7d):*\n{f'{pct_change:+.1f}%' if pct_change is not None else 'N/A'}"}
+                    {"type": "mrkdwn", "text": f"*Expected Range:*\n{expected_range}"}
                 ]
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*Anomaly Reason:*\n{reason}"
+                    "text": f":warning: *Reason:* {reason}"
                 }
             },
             {
@@ -88,11 +89,11 @@ def build_slack_blocks(data: dict) -> dict:
                         "type": "button",
                         "text": {
                             "type": "plain_text",
-                            "text": "▶ View Dashboard",
+                            "text": "View Dashboard",
                             "emoji": True
                         },
-                        "url": dashboard_link,
-                        "action_id": "view_dashboard"
+                        "style": "primary",
+                        "url": dashboard_link
                     }
                 ]
             }
