@@ -10,7 +10,7 @@ resource "aws_apigatewayv2_api" "finops_api" {
   cors_configuration {
     allow_origins = ["http://localhost:5173", "http://localhost:3000", "*"]
     allow_methods = ["GET", "OPTIONS"]
-    allow_headers = ["Content-Type", "Authorization", "X-Requested-With"]
+    allow_headers = ["Content-Type", "Authorization", "X-Requested-With", "X-Account-Id"]
     expose_headers = ["Content-Type"]
     max_age       = 3600
   }
