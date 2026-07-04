@@ -8,9 +8,10 @@ resource "aws_apigatewayv2_api" "finops_api" {
   description   = "FinOps Dashboard API — serves cost data to the frontend"
 
   cors_configuration {
-    allow_origins = ["*"]
+    allow_origins = ["http://localhost:5173", "http://localhost:3000", "*"]
     allow_methods = ["GET", "OPTIONS"]
-    allow_headers = ["Content-Type"]
+    allow_headers = ["Content-Type", "Authorization", "X-Requested-With"]
+    expose_headers = ["Content-Type"]
     max_age       = 3600
   }
 
