@@ -65,7 +65,7 @@ def api_response(status_code: int, body: dict, event: dict = None) -> dict:
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": origin,
             "Access-Control-Allow-Methods": "GET,OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Requested-With",
+            "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Requested-With,X-Account-Id",
             "Vary": "Origin"
         },
         "body": json.dumps(body, cls=DecimalEncoder)
@@ -251,7 +251,11 @@ def lambda_handler(event, context):
 
     # Extract route info from API Gateway event
     http_method = event.get("httpMethod", event.get("requestContext", {}).get("http", {}).get("method", "GET"))
-    path = event.get("path", event.get("rawPath", "/"))
+    path = event.get("rawPath", event.get("path", "/"))
+    # API Gateway HTTP API v2 includes the stage prefix in rawPath (e.g. "/v1/costs")
+    # Strip it so route matching works against bare paths (e.g. "/costs")
+    if path.startswith("/v1"):
+        path = path[3:] or "/"
     query_params = event.get("queryStringParameters") or {}
     path_params = event.get("pathParameters") or {}
 
