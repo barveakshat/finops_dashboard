@@ -1,0 +1,68 @@
+name: Deploy FinOps Dashboard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: ap-south-1
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/ -v \
+            --cov=terraform/modules/lambda/src \
+            --cov-report=term-missing \
+            --cov-fail-under=80
+
+  deploy:
+    name: Terraform Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform init
+
+      - name: Terraform Plan
+        run: |
+          terraform -chdir=terraform plan \
+            -var="account_id=${{ secrets.AWS_ACCOUNT_ID }}" \
+            -no-color
+
+      - name: Terraform Apply
+        run: |
+          terraform -chdir=terraform apply \
+            -var="account_id=${{ secrets.AWS_ACCOUNT_ID }}" \
+            -auto-approve \
+            -no-color
