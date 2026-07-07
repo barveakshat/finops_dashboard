@@ -23,3 +23,5 @@ finops-implementation-plan-team.md
 imp-texts.txt
 .json
 response.json
+apply.log
+*.log
