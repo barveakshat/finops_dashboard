@@ -8,9 +8,10 @@ resource "aws_apigatewayv2_api" "finops_api" {
   description   = "FinOps Dashboard API — serves cost data to the frontend"
 
   cors_configuration {
-    allow_origins = ["*"]
+    allow_origins = ["http://localhost:5173", "http://localhost:3000", "*"]
     allow_methods = ["GET", "OPTIONS"]
-    allow_headers = ["Content-Type"]
+    allow_headers = ["Content-Type", "Authorization", "X-Requested-With", "X-Account-Id"]
+    expose_headers = ["Content-Type"]
     max_age       = 3600
   }
 
@@ -29,31 +30,64 @@ resource "aws_apigatewayv2_integration" "api_handler" {
 }
 
 # ──────────────────────────────────────────────
+# JWT Authorizer — validates Cognito tokens
+# before requests reach the Lambda integration.
+# ──────────────────────────────────────────────
+
+resource "aws_apigatewayv2_authorizer" "cognito_jwt" {
+  api_id           = aws_apigatewayv2_api.finops_api.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "finops-cognito-authorizer"
+
+  jwt_configuration {
+    audience = [var.cognito_client_id]
+    issuer   = var.cognito_issuer
+  }
+}
+
+# ──────────────────────────────────────────────
 # Routes — one per API contract endpoint
+# IMPORTANT: both authorization_type AND authorizer_id
+# must be set on every route. If authorizer_id is set
+# but authorization_type is missing, API Gateway silently
+# lets unauthenticated requests through.
 # ──────────────────────────────────────────────
 
 resource "aws_apigatewayv2_route" "get_costs" {
   api_id    = aws_apigatewayv2_api.finops_api.id
   route_key = "GET /costs"
   target    = "integrations/${aws_apigatewayv2_integration.api_handler.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
 resource "aws_apigatewayv2_route" "get_service_costs" {
   api_id    = aws_apigatewayv2_api.finops_api.id
   route_key = "GET /costs/{service}"
   target    = "integrations/${aws_apigatewayv2_integration.api_handler.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
 resource "aws_apigatewayv2_route" "get_anomalies" {
   api_id    = aws_apigatewayv2_api.finops_api.id
   route_key = "GET /anomalies"
   target    = "integrations/${aws_apigatewayv2_integration.api_handler.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
 resource "aws_apigatewayv2_route" "get_budget" {
   api_id    = aws_apigatewayv2_api.finops_api.id
   route_key = "GET /budget/{month}"
   target    = "integrations/${aws_apigatewayv2_integration.api_handler.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
 # ──────────────────────────────────────────────

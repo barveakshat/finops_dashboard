@@ -13,6 +13,12 @@ REGION     = os.environ.get("AWS_REGION", "ap-south-1")
 AGG_TABLE  = os.environ.get("DYNAMODB_AGG_TABLE", "cost_aggregated")
 BUDGET_USD = float(os.environ.get("MONTHLY_BUDGET_USD", "500.00"))
 
+# Allowed CORS origins — includes Vite dev server and localhost:3000
+CORS_ALLOWED_ORIGINS = {
+    "http://localhost:5173",
+    "http://localhost:3000",
+}
+
 # Lazy global
 _agg_table = None
 
@@ -36,15 +42,31 @@ class DecimalEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def api_response(status_code: int, body: dict) -> dict:
+def resolve_cors_origin(event: dict) -> str:
+    """Return the correct Access-Control-Allow-Origin value.
+
+    If the request's Origin header matches an allowed origin, echo it back.
+    Otherwise fall back to wildcard for non-browser clients (curl, etc.).
+    """
+    headers = event.get("headers") or {}
+    # API Gateway v2 lowercases all header names
+    origin = headers.get("origin", headers.get("Origin", ""))
+    if origin in CORS_ALLOWED_ORIGINS:
+        return origin
+    return "*"
+
+
+def api_response(status_code: int, body: dict, event: dict = None) -> dict:
     """Standard API Gateway response wrapper with CORS headers."""
+    origin = resolve_cors_origin(event) if event else "*"
     return {
         "statusCode": status_code,
         "headers": {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Origin": origin,
             "Access-Control-Allow-Methods": "GET,OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type"
+            "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Requested-With,X-Account-Id",
+            "Vary": "Origin"
         },
         "body": json.dumps(body, cls=DecimalEncoder)
     }
@@ -229,7 +251,11 @@ def lambda_handler(event, context):
 
     # Extract route info from API Gateway event
     http_method = event.get("httpMethod", event.get("requestContext", {}).get("http", {}).get("method", "GET"))
-    path = event.get("path", event.get("rawPath", "/"))
+    path = event.get("rawPath", event.get("path", "/"))
+    # API Gateway HTTP API v2 includes the stage prefix in rawPath (e.g. "/v1/costs")
+    # Strip it so route matching works against bare paths (e.g. "/costs")
+    if path.startswith("/v1"):
+        path = path[3:] or "/"
     query_params = event.get("queryStringParameters") or {}
     path_params = event.get("pathParameters") or {}
 
@@ -238,27 +264,27 @@ def lambda_handler(event, context):
         if path.startswith("/costs/") and "service" in path_params:
             service = path_params["service"]
             body = handle_get_service_trend(service, query_params)
-            return api_response(200, body)
+            return api_response(200, body, event)
 
         # Route: GET /costs
         if path == "/costs" or path == "/costs/":
             body = handle_get_costs(query_params)
-            return api_response(200, body)
+            return api_response(200, body, event)
 
         # Route: GET /anomalies
         if path == "/anomalies" or path == "/anomalies/":
             body = handle_get_anomalies(query_params)
-            return api_response(200, body)
+            return api_response(200, body, event)
 
         # Route: GET /budget/{month}
         if path.startswith("/budget/") and "month" in path_params:
             month = path_params["month"]
             body = handle_get_budget(month)
-            return api_response(200, body)
+            return api_response(200, body, event)
 
         # Unknown route
-        return api_response(404, {"error": "Not found", "path": path})
+        return api_response(404, {"error": "Not found", "path": path}, event)
 
     except Exception as e:
         logger.error(f"API handler error: {e}", exc_info=True)
-        return api_response(500, {"error": "Internal server error"})
+        return api_response(500, {"error": "Internal server error"}, event)
