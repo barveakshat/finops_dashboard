@@ -46,3 +46,22 @@ output "api_handler_function_name" {
   value       = module.lambda.api_handler_name
   description = "Name of the API handler Lambda function"
 }
+
+# ──────────────────────────────────────────────
+# Cognito — values to share with Person B
+# ──────────────────────────────────────────────
+
+output "cognito_user_pool_id" {
+  value       = module.cognito.user_pool_id
+  description = "Cognito User Pool ID (share with Person B)"
+}
+
+output "cognito_user_pool_client_id" {
+  value       = module.cognito.user_pool_client_id
+  description = "Cognito User Pool Client ID (share with Person B)"
+}
+
+output "cognito_hosted_ui_domain" {
+  value       = module.cognito.hosted_ui_domain
+  description = "Cognito Hosted UI domain (share with Person B for OAuth redirect)"
+}

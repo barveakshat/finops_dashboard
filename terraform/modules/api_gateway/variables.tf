@@ -17,3 +17,13 @@ variable "api_handler_lambda_name" {
   type        = string
   description = "Name of the API handler Lambda function"
 }
+
+variable "cognito_client_id" {
+  type        = string
+  description = "Cognito User Pool Client ID — used as the JWT audience"
+}
+
+variable "cognito_issuer" {
+  type        = string
+  description = "Cognito issuer URL — used by the JWT authorizer to validate tokens"
+}

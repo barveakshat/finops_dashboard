@@ -83,6 +83,17 @@ module "eventbridge" {
 }
 
 # ──────────────────────────────────────────────
+# Cognito — User Pool, Client, JWT issuer
+# ──────────────────────────────────────────────
+
+module "cognito" {
+  source      = "./modules/cognito"
+  environment = var.environment
+  account_id  = var.account_id
+  aws_region  = var.aws_region
+}
+
+# ──────────────────────────────────────────────
 # API Gateway — HTTP API with 4 routes
 # ──────────────────────────────────────────────
 
@@ -93,4 +104,8 @@ module "api_gateway" {
   api_handler_lambda_arn  = module.lambda.api_handler_arn
   api_handler_invoke_arn  = module.lambda.api_handler_invoke_arn
   api_handler_lambda_name = module.lambda.api_handler_name
+
+  # Cognito JWT authorizer config
+  cognito_client_id = module.cognito.user_pool_client_id
+  cognito_issuer    = module.cognito.user_pool_issuer
 }
