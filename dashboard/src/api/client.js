@@ -2,13 +2,21 @@
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 let currentAccountId = null;
+let authToken = null;
 
 export function setAccountId(accountId) {
   currentAccountId = accountId;
 }
 
+export function setAuthToken(token) {
+  authToken = token;
+}
+
 function headers() {
-  return currentAccountId ? { "X-Account-Id": currentAccountId } : {};
+  const h = {};
+  if (authToken) h["Authorization"] = `Bearer ${authToken}`;
+  if (currentAccountId) h["X-Account-Id"] = currentAccountId;
+  return h;
 }
 
 export async function getCosts(period = "7d") {

@@ -1,40 +1,25 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-function initialsFrom(name) {
-  return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
-}
-
 export default function Login() {
-  const { login } = useAuth();
-  const [name, setName] = useState("");
-  const [org, setOrg] = useState("");
-  const [environment, setEnvironment] = useState("Production");
-  const [accountId, setAccountId] = useState("");
+  const { login, authError, loading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [localError, setLocalError] = useState(null);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (!name.trim() || !org.trim()) return;
+    if (!email.trim() || !password) return;
+    setLocalError(null);
 
-    // If no account ID given, derive a stable-looking one from name+org
-    const resolvedAccountId = accountId.trim() || String(
-      Math.abs(hashCode(name + org)) % 900000000000 + 100000000000
-    );
-
-    login({
-      name: name.trim(),
-      org: org.trim(),
-      environment,
-      accountId: resolvedAccountId,
-      initials: initialsFrom(name),
-    });
+    try {
+      await login(email.trim(), password);
+    } catch (err) {
+      setLocalError(err.message);
+    }
   }
 
-  function hashCode(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) { h = (h << 5) - h + str.charCodeAt(i); h |= 0; }
-    return h;
-  }
+  const errorMsg = localError || authError;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
@@ -42,38 +27,56 @@ export default function Login() {
         <div className="eyebrow">AWS Cost Monitoring</div>
         <h1 className="dashboard-title" style={{ fontSize: "1.6rem", marginBottom: "0.4rem" }}>FinOps Dashboard</h1>
         <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "1.75rem" }}>
-          Sign in with your organization details. Each account sees only its own data.
+          Sign in with your credentials to access cost data.
         </p>
+
+        {errorMsg && (
+          <div style={{
+            padding: "0.6rem 0.8rem", marginBottom: "1rem", borderRadius: "8px",
+            background: "rgba(255, 80, 80, 0.1)", border: "1px solid rgba(255, 80, 80, 0.3)",
+            color: "#ff6b6b", fontSize: "0.82rem"
+          }}>
+            {errorMsg}
+          </div>
+        )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
-            <label style={{ fontSize: "0.72rem", color: "var(--text-faint)", display: "block", marginBottom: "0.3rem" }}>Full Name</label>
-            <input value={name} onChange={e => setName(e.target.value)} required placeholder="e.g. Nandini Sharma"
-              style={inputStyle} />
+            <label style={{ fontSize: "0.72rem", color: "var(--text-faint)", display: "block", marginBottom: "0.3rem" }}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="demo@finops.dev"
+              autoComplete="username"
+              style={inputStyle}
+            />
           </div>
           <div>
-            <label style={{ fontSize: "0.72rem", color: "var(--text-faint)", display: "block", marginBottom: "0.3rem" }}>Organization</label>
-            <input value={org} onChange={e => setOrg(e.target.value)} required placeholder="e.g. ABC Technologies"
-              style={inputStyle} />
-          </div>
-          <div>
-            <label style={{ fontSize: "0.72rem", color: "var(--text-faint)", display: "block", marginBottom: "0.3rem" }}>Environment</label>
-            <select value={environment} onChange={e => setEnvironment(e.target.value)} style={inputStyle}>
-              <option>Production</option>
-              <option>Staging</option>
-              <option>Development</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ fontSize: "0.72rem", color: "var(--text-faint)", display: "block", marginBottom: "0.3rem" }}>
-              AWS Account ID <span style={{ color: "var(--text-faint)" }}>(optional — auto-generated if blank)</span>
-            </label>
-            <input value={accountId} onChange={e => setAccountId(e.target.value)} placeholder="12-digit account ID"
-              className="mono" style={inputStyle} />
+            <label style={{ fontSize: "0.72rem", color: "var(--text-faint)", display: "block", marginBottom: "0.3rem" }}>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              autoComplete="current-password"
+              style={inputStyle}
+            />
           </div>
 
-          <button type="submit" className="topbar-control active" style={{ justifyContent: "center", marginTop: "0.5rem", padding: "0.65rem", fontSize: "0.85rem", cursor: "pointer" }}>
-            Sign In →
+          <button
+            type="submit"
+            disabled={loading}
+            className="topbar-control active"
+            style={{
+              justifyContent: "center", marginTop: "0.5rem", padding: "0.65rem",
+              fontSize: "0.85rem", cursor: loading ? "wait" : "pointer",
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            {loading ? "Signing in…" : "Sign In →"}
           </button>
         </div>
       </form>
