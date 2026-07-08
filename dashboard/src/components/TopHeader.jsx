@@ -6,8 +6,8 @@ export default function TopHeader({ autoRefresh, onToggleAutoRefresh, anomalies,
   return (
     <div className="topbar" style={{ position: "relative", justifyContent: "space-between" }}>
       {user && (
-        <div className="mono" style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-          Viewing: <span style={{ color: "var(--accent-blue)", fontWeight: 600 }}>{user.org}</span> · {user.accountId} · {user.environment}
+      <div className="mono" style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+          Signed in as: <span style={{ color: "var(--accent-blue)", fontWeight: 600 }}>{user.email}</span>
         </div>
       )}
 
@@ -21,7 +21,6 @@ export default function TopHeader({ autoRefresh, onToggleAutoRefresh, anomalies,
           🔔
           {anomalies.length > 0 && <span className="notif-badge">{anomalies.length}</span>}
         </div>
-        <div className="avatar" />
       </div>
 
       {notifOpen && (

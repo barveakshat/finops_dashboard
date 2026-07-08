@@ -39,7 +39,7 @@ function Dashboard() {
   useEffect(() => {
     setSelectedService(null);
     getAnomalies("7d").then(d => setAnomalies(d.anomalies || [])).catch(() => {});
-  }, [refreshKey, user?.accountId]);
+  }, [refreshKey, user?.email]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -47,7 +47,7 @@ function Dashboard() {
 
   const lastUpdated = now.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
   const nowShort = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" });
-  const dataKey = `${user?.accountId}-${refreshKey}`;
+  const dataKey = `${user?.email}-${refreshKey}`;
 
   function renderSection() {
     switch (activeTab) {

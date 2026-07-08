@@ -22,9 +22,8 @@ export default function Sidebar({ active, onSelect, lastUpdated }) {
             display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.8rem", flexShrink: 0
           }}>{user.initials}</div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 600, fontSize: "0.82rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.name}</div>
-            <div style={{ fontSize: "0.68rem", color: "var(--text-faint)" }}>{user.org}</div>
-            <div className="mono" style={{ fontSize: "0.65rem", color: "var(--text-faint)" }}>{user.accountId} · {user.environment}</div>
+            <div style={{ fontWeight: 600, fontSize: "0.82rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.email}</div>
+            <div style={{ fontSize: "0.68rem", color: "var(--text-faint)" }}>Authenticated</div>
           </div>
         </div>
       )}
@@ -40,7 +39,7 @@ export default function Sidebar({ active, onSelect, lastUpdated }) {
       <div className="sidebar-footer-card">
         <div style={{ color: "var(--text-faint)", marginBottom: "0.3rem" }}>LAST UPDATED</div>
         <div className="mono" style={{ color: "var(--text-muted)", marginBottom: "0.6rem" }}>{lastUpdated}</div>
-        <div onClick={logout} style={{ color: "var(--accent-red)", cursor: "pointer", fontSize: "0.75rem" }}>Switch Account →</div>
+        <div onClick={logout} style={{ color: "var(--accent-red)", cursor: "pointer", fontSize: "0.75rem" }}>Sign Out →</div>
       </div>
     </aside>
   );
