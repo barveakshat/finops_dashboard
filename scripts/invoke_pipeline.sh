@@ -128,7 +128,7 @@ fi
 
 # ── Step 3: Anomaly Detector ────────────────────────────────
 step "3" "Anomaly Detector (date: ${TODAY})"
-DETECTOR_PAYLOAD="{\"date\": \"${TODAY}\"}"
+DETECTOR_PAYLOAD='{"date": "'"${TODAY}"'"}'
 if ! invoke_lambda "$DETECTOR_FN" "${RESPONSE_DIR}/response_detector.json" "$DETECTOR_PAYLOAD"; then
     fail "Pipeline aborted — anomaly detector failed."
     exit 1
@@ -169,3 +169,4 @@ info "Response files saved in: ${RESPONSE_DIR}/"
 echo "  response_ingestor.json   — raw cost ingestion result"
 echo "  response_aggregator.json — aggregation result"
 echo "  response_detector.json   — anomaly detection result"
+
