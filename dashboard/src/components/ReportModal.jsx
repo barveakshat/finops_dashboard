@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getCosts, getBudget, getAnomalies, getServiceTrend } from "../api/client";
 import { downloadCSV, printCurrentReport } from "../utils/export";
+import { createPortal } from "react-dom";
 
 export default function ReportModal({ type, onClose }) {
   const [data, setData] = useState(null);
@@ -52,7 +53,7 @@ export default function ReportModal({ type, onClose }) {
     if (type === "anomaly") downloadCSV("anomaly_report.csv", data.anomalies);
   }
 
-  return (
+  return createPortal(
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "3rem 1rem", overflowY: "auto" }} onClick={onClose}>
       <div className="card" style={{ padding: "2rem", width: "100%", maxWidth: "760px" }} onClick={e => e.stopPropagation()} id="report-print-area">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
@@ -120,7 +121,8 @@ export default function ReportModal({ type, onClose }) {
           <button className="topbar-control" onClick={printCurrentReport} style={{ cursor: "pointer" }}>🖨 Print / Save as PDF</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
