@@ -25,3 +25,6 @@ imp-texts.txt
 response.json
 apply.log
 *.log
+
+# Pipeline test outputs
+scripts/.pipeline_responses/
