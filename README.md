@@ -1,3 +1,8 @@
+
+
+
+
+
 <div align="center">
 
 # ☁️ FinOps Dashboard
@@ -37,29 +42,9 @@
 
 <div align="center">
 
-<!-- OPTION 1: YouTube Embed (Recommended — renders as a clickable thumbnail on GitHub) -->
-<!-- Replace YOUR_VIDEO_ID with your actual YouTube video ID -->
-[![FinOps Dashboard Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
-
-*☝️ Click to watch the full demo on YouTube*
-
-<!-- OPTION 2: If hosting as MP4/WebM in the repo or on a CDN, uncomment below -->
-<!-- 
-<video src="https://YOUR_VIDEO_URL_HERE.mp4" width="800" controls>
-  Your browser does not support the video tag.
-</video>
--->
-
-<!-- OPTION 3: Direct GitHub video (upload .mp4 to repo or drag into README editor) -->
-<!-- 
-https://github.com/user-attachments/assets/YOUR_ASSET_ID
--->
+https://github.com/user-attachments/assets/86bd959d-063a-4737-81f7-b0afcf01bbf5
 
 </div>
-
-> **📌 Demo video coming soon** — Replace `YOUR_VIDEO_ID` above with your YouTube video ID, or drag-and-drop an `.mp4` file directly into the GitHub README editor to embed it inline.
-
----
 
 ## 🧠 Why This Project Exists
 
